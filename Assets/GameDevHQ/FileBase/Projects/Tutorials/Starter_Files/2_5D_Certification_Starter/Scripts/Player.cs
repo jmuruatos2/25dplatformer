@@ -17,7 +17,9 @@ public class Player : MonoBehaviour
     private bool _jumping;
     private bool _ledgeGrabbed;
     private Vector3 _standUpCoord;
-
+    private int _coins;
+    private UIManager _uiManager;
+   
 
     CharacterController _controller;
 
@@ -35,6 +37,13 @@ public class Player : MonoBehaviour
         if (_anim == null)
         {
             Debug.LogError("Error: Animator es null");
+        }
+
+        _uiManager = GameObject.Find("Canvas").GetComponent<UIManager>();
+
+        if (_uiManager== null)
+        {
+            Debug.LogError("Error: UIManager Nulo");
         }
     }
 
@@ -125,5 +134,11 @@ public class Player : MonoBehaviour
         _controller.enabled = true;
         Debug.Log("Controller enabled");
         
+    }
+
+    public void AddCoins()
+    {
+        _coins++;
+        _uiManager.UpdateCoins(_coins);
     }
 }
