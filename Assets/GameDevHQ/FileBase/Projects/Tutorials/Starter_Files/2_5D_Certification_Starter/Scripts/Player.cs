@@ -10,7 +10,7 @@ public class Player : MonoBehaviour
     [SerializeField]
     private float _gravedad = -1.0f;
     [SerializeField]
-    private float _speed = 4.0f;
+    private float _speed = 4.0f, _ladderSpeed = 1.0f;
     [SerializeField]
     private float _velocidadVertical, _velocidadHorizontal;
     private Animator _anim;
@@ -19,6 +19,10 @@ public class Player : MonoBehaviour
     private Vector3 _standUpCoord;
     private int _coins;
     private UIManager _uiManager;
+    private bool _ladderAvailable;
+    private bool _onLadder;
+    private Vector3 _ladderBottom, _ladderTop, _landingTop, _landingBottom;
+    private bool _exitingLadder;
    
 
     CharacterController _controller;
@@ -50,12 +54,22 @@ public class Player : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        /////DEBUG DE SPACE KEY
-        if(Input.GetKeyDown(KeyCode.Space) && !_controller.isGrounded)
+
+        if (Input.GetKeyDown(KeyCode.F) && _ladderAvailable && !_onLadder)
         {
-            Debug.Log("espacio y no esta grounded!");
+            _controller.enabled = false;
+            _onLadder = true;
+            _uiManager.LadderTextEnable(false);
+            _anim.SetTrigger("OnLadder");
+            transform.position = _ladderBottom;
+            
         }
 
+        if (_onLadder)
+        {
+            OnLadder();
+            return;
+        }
 
         if (_controller.enabled == true)
         {
@@ -132,13 +146,120 @@ public class Player : MonoBehaviour
         _ledgeGrabbed = false;
         transform.position = _standUpCoord;
         _controller.enabled = true;
-        Debug.Log("Controller enabled");
         
+        
+    }
+
+    public void ClimbedUp()
+    {
+        _onLadder = false;
+        transform.position = _landingTop;
+        _controller.enabled = true;
+        _exitingLadder = false;
+        _anim.SetBool("ClimbingLadder", false);
+        _anim.SetBool("DescendingLadder", false);
+
+    }
+
+    public void Descend()
+    {
+        _onLadder = false;
+        transform.position = _landingBottom;
+        _controller.enabled = true;
+        _exitingLadder = false;
+        _anim.SetBool("ClimbingLadder", false);
+        _anim.SetBool("DescendingLadder", false);
+
     }
 
     public void AddCoins()
     {
         _coins++;
         _uiManager.UpdateCoins(_coins);
+    }
+
+    public void SetLadderAvailable(bool available, Vector3 ladderBottom, Vector3 ladderTop, Vector3 landingTop, Vector3 landingBottom)
+    {
+        _ladderBottom = ladderBottom;
+        _ladderTop = ladderTop;
+        _landingTop = landingTop;
+        _landingBottom = landingBottom;
+        _ladderAvailable = available;
+        
+        _uiManager.LadderTextEnable(available);
+
+    }
+
+    public void OnLadder()
+    {
+        if (_exitingLadder)
+        {
+            return;
+        }
+
+        float verticalAxis = Input.GetAxisRaw("Vertical");
+        float verticalMovement = verticalAxis * _ladderSpeed;
+
+        if (transform.position.y <= _ladderBottom.y && verticalAxis < 0)
+        {
+            _anim.SetTrigger("Descend");
+            _exitingLadder = true;
+            Descend();
+
+        }
+
+        if (transform.position.y >= _ladderTop.y && verticalAxis > 0)
+        {
+            _anim.SetTrigger("LadderTop");
+            _exitingLadder = true;
+            
+        }
+
+        Debug.Log("Player Position: + " + transform.position.y + " , TopLadder poisition: " + _ladderTop.y + " vertical axis: " + verticalAxis);
+
+       
+        if (_exitingLadder)
+        {
+            return;
+        }
+
+
+        transform.position += new Vector3(0, verticalMovement, 0) * Time.deltaTime;
+        switch (verticalAxis)
+        {
+            case 0:
+                _anim.SetBool("ClimbingLadder", false);
+                _anim.SetBool("DescendingLadder", false);
+                break;
+            case 1:
+                _anim.SetBool("ClimbingLadder", true);
+                _anim.SetBool("DescendingLadder", false);
+                break;
+            case -1:
+                _anim.SetBool("ClimbingLadder", false);
+                _anim.SetBool("DescendingLadder", true);
+                break;
+        }
+
+        //if (verticalMovement > 0)
+        //{
+        //    _anim.SetBool("ClimbingLadder", true);
+            
+        //} else 
+        //{
+        //    _anim.SetBool("ClimbingLadder", false);
+        //}
+
+        //if (verticalMovement < 0)
+        //{
+        //    _anim.SetBool("DescendingLadder", true);
+        //} else
+        //{
+        //    _anim.SetBool("DescendingLadder", false);
+        //}
+
+        //_controller.Move(new Vector3(0, verticalMovement, 0) * Time.deltaTime);
+
+
     }
 }
