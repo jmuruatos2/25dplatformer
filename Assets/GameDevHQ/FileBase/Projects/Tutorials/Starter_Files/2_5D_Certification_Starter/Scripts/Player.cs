@@ -13,7 +13,8 @@ public class Player : MonoBehaviour
     private float _speed = 4.0f, _ladderSpeed = 1.0f;
     [SerializeField]
     private float _velocidadVertical, _velocidadHorizontal;
-    private Animator _anim;
+    [SerializeField]
+    private Animator _anim, _animCollider;
     private bool _jumping;
     private bool _ledgeGrabbed;
     private Vector3 _standUpCoord;
@@ -23,6 +24,8 @@ public class Player : MonoBehaviour
     private bool _onLadder;
     private Vector3 _ladderBottom, _ladderTop, _landingTop, _landingBottom;
     private bool _exitingLadder;
+    private bool _rolling;
+
    
 
     CharacterController _controller;
@@ -36,12 +39,19 @@ public class Player : MonoBehaviour
             Debug.LogError("Error: CharacterController es null");
         }
 
-        _anim = GetComponentInChildren<Animator>();
+        //_anim = GetComponentInChildren<Animator>();
 
-        if (_anim == null)
-        {
-            Debug.LogError("Error: Animator es null");
-        }
+        //if (_anim == null)
+        //{
+        //    Debug.LogError("Error: Animator es null");
+        //}
+
+        //_animCollider = GetComponent<Animator>();
+
+        //if (_animCollider == null)
+        //{
+        //    Debug.LogError("Error: Animator Collider es null");
+        //}
 
         _uiManager = GameObject.Find("Canvas").GetComponent<UIManager>();
 
@@ -100,6 +110,13 @@ public class Player : MonoBehaviour
                 _velocidadVertical = _potenciaSalto;
                 _jumping = true;
                 _anim.SetBool("Jumping", _jumping);
+            }
+
+            if (!_jumping && Input.GetKeyDown(KeyCode.LeftShift) && !_rolling)
+            {
+                _anim.SetTrigger("Roll");
+                _animCollider.SetTrigger("Roll");
+                _rolling = true;
             }
 
             _velocidadHorizontal = Input.GetAxisRaw("Horizontal") * _speed;
@@ -190,6 +207,10 @@ public class Player : MonoBehaviour
 
     }
 
+    public void FinishedRolling()
+    {
+        _rolling = false;
+    }
     public void OnLadder()
     {
         if (_exitingLadder)
