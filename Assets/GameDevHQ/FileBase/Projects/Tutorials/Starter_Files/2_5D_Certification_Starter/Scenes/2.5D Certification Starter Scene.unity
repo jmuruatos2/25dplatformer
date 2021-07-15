@@ -10034,7 +10034,7 @@ PrefabInstance:
       objectReference: {fileID: 919492613}
     - target: {fileID: 2872081204506432636, guid: eee0ca60597531a4fbad85a603006730, type: 3}
       propertyPath: _potenciaSalto
-      value: 40
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 2872081204506432637, guid: eee0ca60597531a4fbad85a603006730, type: 3}
       propertyPath: m_RootOrder
